@@ -11,6 +11,7 @@ import hashlib
 from datetime import datetime, timezone
 import json
 import os
+import re
 from pathlib import Path, PurePosixPath
 import secrets
 import shutil
@@ -39,6 +40,8 @@ def load_task(filename: Path) -> dict:
     task = json.loads(filename.read_text(encoding="utf-8"))
     if not isinstance(task, dict) or any(key not in task for key in REQUIRED):
         raise RunnerError("Missing required portable task fields")
+    if not isinstance(task["repository"], str) or not task["repository"].strip():
+        raise RunnerError("Task repository must identify a destination")
     if task["schema_version"] != 1 or task["runtime"] not in RUNTIMES:
         raise RunnerError("Unsupported task schema/runtime")
     if not isinstance(task["task_id"], str) or not task["task_id"].replace("-", "").isalnum():
@@ -76,6 +79,34 @@ def checkout_state(root: Path, execute: bool, read_only: bool) -> tuple[str, str
     if execute and baseline and not read_only:
         raise RunnerError("Mutating tasks require a clean checkout; isolate/commit prior work")
     return branch, sha, baseline
+
+
+def verify_repo_identity(root: Path, expected: str) -> str:
+    """Fail closed when a provider task targets the wrong Git repository.
+
+    Accept normal GitHub HTTPS or SSH origin URLs and an exact owner/repo
+    selector, or a repository-name-only selector for portable task examples.
+    """
+    remote = git(root, "remote", "get-url", "origin")
+    value = remote.removesuffix(".git").rstrip("/")
+    if "://" in value:
+        # https://github.com/owner/name or ssh://git@github.com/owner/name
+        parts = value.split("/")
+        if len(parts) < 2:
+            raise RunnerError("Unrecognizable origin remote URL")
+        actual = "/".join(parts[-2:])
+    elif ":" in value:
+        # git@github.com:owner/name
+        actual = value.rsplit(":", 1)[-1]
+    else:
+        raise RunnerError("Unsupported non-network origin remote; refusing execution")
+    if "/" not in actual or actual.startswith("/"):
+        raise RunnerError("Cannot identify owner/repository from origin")
+    requested = expected.strip().lower().removesuffix(".git")
+    actual = actual.strip().lower()
+    if requested != actual and requested != actual.rsplit("/", 1)[-1]:
+        raise RunnerError(f"Task targets {expected!r}, but checkout origin is {actual!r}")
+    return actual
 
 
 def changed_paths(root: Path) -> list[str]:
@@ -185,6 +216,8 @@ def private_save(path: Path, content: str) -> None:
 
 def run(task: dict, root: Path, execute: bool, receipts: Path | None, timeout: int) -> dict:
     branch, sha, before = checkout_state(root, execute, task.get("read_only", False))
+    if execute:
+        verify_repo_identity(root, task["repository"])
     if task.get("base_commit") and task["base_commit"] != sha:
         raise RunnerError(f"Base SHA mismatch; expected {task['base_commit']}, found {sha}")
     command = native_command(task, make_prompt(task, sha))

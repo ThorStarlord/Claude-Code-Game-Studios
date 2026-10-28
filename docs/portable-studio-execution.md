@@ -77,3 +77,14 @@ repository; native sandbox permissions remain the security boundary.
 The sequence is intentionally not a workflow engine with restart/retry
 semantics. User-facing documents must distinguish an interrupted handoff from
 a verified completed feature.
+
+## Repository identity check
+
+Before actual execution, the runner verifies the task's declared repository
+against the checkout's `origin` remote (GitHub SSH/HTTPS and equivalent
+network URLs). A local checkout without a recognizable origin fails closed
+instead of silently applying an Atlas task to another repository. Dry runs
+do not require remote credentials.
+
+This remains a correctness check, not an authorization to modify someone
+else's repository. Native permissions and owner scope still govern.

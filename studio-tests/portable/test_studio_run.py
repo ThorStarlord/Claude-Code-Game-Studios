@@ -77,6 +77,16 @@ class RunnerTests(unittest.TestCase):
             changed = RUN.working_fingerprint(root)
             self.assertNotEqual(original, changed)
 
+    def test_repo_identity_protects_wrong_destination(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.create_repo(directory, "ccgs-pilot")
+            subprocess.run(["git", "-C", str(root), "remote", "add", "origin",
+                            "git@github.com:AnotherOwner/unrelated-project.git"], check=True)
+            with self.assertRaises(RUN.RunnerError):
+                RUN.verify_repo_identity(root, "atlas-midgard")
+            self.assertEqual(RUN.verify_repo_identity(root, "unrelated-project"),
+                             "anotherowner/unrelated-project")
+
     def test_dry_run_does_not_contact_provider(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self.create_repo(directory, "ccgs-pilot")
