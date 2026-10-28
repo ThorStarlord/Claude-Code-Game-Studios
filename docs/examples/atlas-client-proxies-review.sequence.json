@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "sequence_id": "atlas-portable-studio-review",
+  "steps": [
+    {
+      "task": "atlas-client-proxies-review.task.json"
+    },
+    {
+      "task": "atlas-client-proxies-reconcile.task.json"
+    }
+  ]
+}

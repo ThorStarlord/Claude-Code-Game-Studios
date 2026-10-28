@@ -44,17 +44,17 @@ after it runs `project.yaml` holds the real values.
 
 @.claude/docs/coordination-rules.md
 
-## Collaboration Protocol
+## Collaboration Protocol — legacy Claude-native workflows
 
-**User-driven collaboration, not autonomous execution.**
-Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
+**Legacy unprefixed roles and skills remain user-driven unless their existing automation contracts say otherwise.**
+Legacy unprefixed tasks follow: **Question -> Options -> Decision -> Draft -> Approval**, except where their existing automation modes apply.
 
-- Agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
+- Legacy agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
   (exempt: `active.md` appends, agent memory, a subagent's new file at the path
   its orchestrating skill named; see `.claude/rules/agent-memory.md`)
-- Agents MUST show drafts or summaries before requesting approval
-- Multi-file changes require explicit approval for the full changeset
-- No commits without user instruction
+- Legacy agents MUST show drafts or summaries before requesting approval
+- Legacy multi-file changes require explicit approval under their selected automation mode
+- For legacy workflows, do not commit without user instruction
 - A skipped or dismissed question is not an answer: act on nothing, re-ask in
   plain text and wait
 - Started outside this file's folder? Warn first: hooks, deny rules and the
@@ -64,6 +64,16 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 
 > **First session?** If the project has no engine configured and no game concept,
 > run `/start` to begin the guided onboarding flow.
+
+### Portable studio overlay (opt-in)
+
+Generated `ccgs-*` roles and workflows use the shared instructions under
+`studio/roles/`, `studio/workflows/` and `studio/policies/autonomy.md`.
+Their ordinary scoped edits may proceed when a user delegates autonomy, but
+actual runtime permission/sandbox checks still apply. This overlay does not
+change the existing unprefixed agents or grant merge, release, credential or
+out-of-scope mutation authority. Run `python scripts/studioctl.py validate`
+before regenerating native definitions.
 
 ## Coding Standards
 

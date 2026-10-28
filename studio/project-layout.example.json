@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "engine": "godot",
+  "engine_version": "4.7.2",
+  "code_root": "game",
+  "scene_root": "game",
+  "test_root": "tests",
+  "autonomy": "autonomous"
+}

@@ -1,0 +1,37 @@
+name: Portable studio contract checks
+on:
+  push:
+    branches:
+      - main
+      - feature/portable-studio-native-adapters
+  pull_request:
+    paths:
+      - "studio/**"
+      - "scripts/studioctl.py"
+      - "scripts/studio_run.py"
+      - "scripts/studio_sequence.py"
+      - "scripts/studio_audit.py"
+      - "studio-tests/portable/**"
+      - ".agents/skills/**"
+      - ".codex/agents/**"
+      - ".opencode/agents/**"
+      - ".claude/agents/ccgs-*.md"
+      - ".claude/skills/ccgs-*/**"
+      - ".github/workflows/portable-studio.yml"
+jobs:
+  portable:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate portable registry
+        run: python scripts/studioctl.py validate
+      - name: Verify reproducible native adapters
+        run: python scripts/studioctl.py generate --runtime all --check
+      - name: Run portable offline contract tests
+        run: python -m unittest discover -s studio-tests/portable -v
+

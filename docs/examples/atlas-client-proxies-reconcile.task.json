@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "task_id": "atlas-client-proxies-reconcile",
+  "role": "ccgs-producer",
+  "runtime": "claude",
+  "objective": "Reconcile the Atlas client replica presentation candidate against canonical Package 35 and 36 scope, reported review findings and outstanding execution evidence.",
+  "repository": "atlas-midgard",
+  "allowed_paths": [
+    "docs/implementation"
+  ],
+  "read_only": true,
+  "acceptance_criteria": [
+    "Separate delivered game behavior from static declarations and unexecuted runtime verification.",
+    "Identify smallest next action needed for real Godot qualification without redefining Atlas roadmap."
+  ]
+}
