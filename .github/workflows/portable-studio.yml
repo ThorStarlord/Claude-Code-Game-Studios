@@ -2,12 +2,15 @@ name: Portable studio contract checks
 on:
   push:
     branches:
+      - main
       - feature/portable-studio-native-adapters
   pull_request:
     paths:
       - "studio/**"
       - "scripts/studioctl.py"
       - "scripts/studio_run.py"
+      - "scripts/studio_sequence.py"
+      - "scripts/studio_audit.py"
       - "studio-tests/portable/**"
       - ".agents/skills/**"
       - ".codex/agents/**"
