@@ -44,9 +44,9 @@ after it runs `project.yaml` holds the real values.
 
 @.claude/docs/coordination-rules.md
 
-## Collaboration Protocol
+## Collaboration Protocol — legacy Claude-native workflows
 
-**User-driven collaboration, not autonomous execution.**
+**Legacy unprefixed roles and skills remain user-driven unless their existing automation contracts say otherwise.**
 Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
 
 - Agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
@@ -64,6 +64,16 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 
 > **First session?** If the project has no engine configured and no game concept,
 > run `/start` to begin the guided onboarding flow.
+
+### Portable studio overlay (opt-in)
+
+Generated `ccgs-*` roles and workflows use the shared instructions under
+`studio/roles/`, `studio/workflows/` and `studio/policies/autonomy.md`.
+Their ordinary scoped edits may proceed when a user delegates autonomy, but
+actual runtime permission/sandbox checks still apply. This overlay does not
+change the existing unprefixed agents or grant merge, release, credential or
+out-of-scope mutation authority. Run `python scripts/studioctl.py validate`
+before regenerating native definitions.
 
 ## Coding Standards
 
