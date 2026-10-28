@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "task_id": "atlas-client-proxies-review",
+  "role": "ccgs-godot-specialist",
+  "runtime": "opencode",
+  "objective": "Review the existing client replica presentation implementation and smoke test for concrete Godot 4.7.2 correctness and authority violations.",
+  "repository": "atlas-midgard",
+  "allowed_paths": [
+    "game",
+    "tests",
+    "docs/implementation"
+  ],
+  "read_only": true,
+  "acceptance_criteria": [
+    "Inspect whether scene loading, Godot typed GDScript, interpolation and Node3D lifecycle are correct.",
+    "Report line-specific findings with suggested repairs, separating static evidence from executed runtime checks.",
+    "Do not change project, Git, engine configuration or host-owned progression authority."
+  ]
+}

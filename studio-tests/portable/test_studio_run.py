@@ -61,6 +61,22 @@ class RunnerTests(unittest.TestCase):
         subprocess.run(["git", "-C", str(root), "commit", "-qm", "init"], check=True)
         return root
 
+    def test_prompt_inlines_canonical_role_instructions(self):
+        prompt = RUN.make_prompt(sample(read_only=False), "0123456789abcdef")
+        self.assertIn("Required specialist behavior", prompt)
+        self.assertIn("Your responsibility is working game capability", prompt)
+
+    def test_readonly_fingerprint_detects_in_place_mutation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.create_repo(directory, "ccgs-pilot")
+            (root / "game").mkdir()
+            path = root / "game" / "proxy.gd"
+            path.write_text("first candidate")
+            original = RUN.working_fingerprint(root)
+            path.write_text("second candidate")
+            changed = RUN.working_fingerprint(root)
+            self.assertNotEqual(original, changed)
+
     def test_dry_run_does_not_contact_provider(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self.create_repo(directory, "ccgs-pilot")

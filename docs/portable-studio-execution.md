@@ -53,3 +53,27 @@ reconciles. Native installed-provider execution is still unverified here. Add
 crash-safe resumability and concurrent worktree orchestration only after real
 usage demonstrates the need.
 
+
+## Ordered mixed-runtime review
+
+The following dry run validates a pair of read-only Atlas handoffs without
+contacting OpenCode or Claude:
+
+    python scripts/studio_sequence.py --sequence docs/examples/atlas-client-proxies-review.sequence.json --worktree ../atlas-midgard-ccgs
+
+To execute the actual providers, authenticate them on the workstation and add
+`--execute --receipt-dir ../private-studio-receipts`. The sequence stops when
+a provider fails or reports blocked, and never auto-merges.
+
+The CLI runner includes full canonical role instructions in each task prompt.
+This matters for Codex: `codex exec` is a top-level run and does not by itself
+prove that a separately configured custom subagent was spawned.
+
+A read-only review of an already-dirty worktree now fingerprints changed files
+before and after the provider runs, to detect same-status edits. Git working
+tree checks do not detect every possible write to ignored files or outside the
+repository; native sandbox permissions remain the security boundary.
+
+The sequence is intentionally not a workflow engine with restart/retry
+semantics. User-facing documents must distinguish an interrupted handoff from
+a verified completed feature.

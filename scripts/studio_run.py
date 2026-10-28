@@ -7,6 +7,7 @@ Git diff validation is a postcondition, not preventative containment.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from datetime import datetime, timezone
 import json
 import os
@@ -104,7 +105,53 @@ def make_prompt(task: dict, sha: str) -> str:
         lines.append(f"Acceptance criterion: {criterion}")
     if task.get("read_only", False):
         lines.append("This is READ ONLY. Make no file, Git or project state changes.")
+    lines.extend([
+        "",
+        "Required specialist behavior (canonical portable role instructions):",
+        canonical_role_instructions(task),
+    ])
     return "\n".join(lines)
+
+
+def working_fingerprint(root: Path) -> dict[str, str]:
+    """Detect in-place changes to dirty worktrees during read-only reviews.
+
+    Git status alone cannot detect an edit whose modified/untracked status
+    remains the same. This is not a security sandbox: processes may touch
+    ignored files or paths outside the repository.
+    """
+    result: dict[str, str] = {}
+    for name in changed_paths(root):
+        path = root / name
+        if not path.is_file():
+            result[name] = "<non-file>"
+            continue
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for block in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(block)
+        result[name] = digest.hexdigest()
+    return result
+
+
+def canonical_role_instructions(task: dict) -> str:
+    """Inject the role regardless of native subagent availability.
+
+    Codex exec is a top-level process; native custom agents do not
+    automatically run just because a role name appears in a prompt.
+    """
+    manifest = json.loads((ROOT / "studio/manifest.json").read_text(encoding="utf-8"))
+    role = next((item for item in manifest["roles"] if item["id"] == task["role"]), None)
+    if role is None:
+        raise RunnerError(f"Unknown role: {task['role']}")
+    source = (ROOT / role["source"]).resolve()
+    if not source.is_relative_to((ROOT / "studio").resolve()):
+        raise RunnerError("Role source escapes portable studio")
+    content = source.read_text(encoding="utf-8")
+    parts = content.split("---", 2)
+    if len(parts) < 3 or not parts[2].strip():
+        raise RunnerError("Role source is missing its instruction body")
+    return parts[2].strip()
 
 
 def native_command(task: dict, prompt: str) -> list[str]:
@@ -141,6 +188,7 @@ def run(task: dict, root: Path, execute: bool, receipts: Path | None, timeout: i
     if task.get("base_commit") and task["base_commit"] != sha:
         raise RunnerError(f"Base SHA mismatch; expected {task['base_commit']}, found {sha}")
     command = native_command(task, make_prompt(task, sha))
+    readonly_fingerprint = working_fingerprint(root) if task.get("read_only", False) else None
     record = {
         "schema_version": 1, "task_id": task["task_id"], "runtime": task["runtime"],
         "status": "not_run", "base_commit": sha, "worktree": str(root),
@@ -166,7 +214,10 @@ def run(task: dict, root: Path, execute: bool, receipts: Path | None, timeout: i
     changes = changed_paths(root)
     record.update(changed_files=changes, exit_code=code)
     unexpected = [p for p in changes if not within_scope(p, task["allowed_paths"])]
-    if task.get("read_only", False) and git(root, "status", "--porcelain", "-uall") != before:
+    if task.get("read_only", False) and (
+        git(root, "status", "--porcelain", "-uall") != before
+        or working_fingerprint(root) != readonly_fingerprint
+    ):
         record.update(status="blocked", reason="Read-only task changed Git working state")
     elif unexpected:
         record.update(status="blocked", reason=f"Out-of-scope changes detected (not reverted): {unexpected}")

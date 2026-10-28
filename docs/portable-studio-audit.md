@@ -53,3 +53,17 @@ current Package 35 guest replica state without changing host authority.
 Keep all CCGS framework source changes in this repository; use a distinct Atlas
 branch for its game integration and preserve the solo First Journey release.
 
+
+## Reproducible migration inventory
+
+Run `python scripts/studio_audit.py --summary --expect-baseline` to enumerate
+legacy roles and workflow skills and count lexical coupling indicators:
+Claude-native Agent and AskUserQuestion calls, prompt injection, model pins,
+tool grants, .claude paths and the Godot src/ assumption. The complete JSON
+inventory (without `--summary`) records each source file separately.
+
+It is a **lexical diagnostic**, not an automatic compatibility translator or
+proof of full migration. Missing coupling markers do not guarantee a portable
+workflow. Treat the original 49/74 baseline and prefixed four/three pilot as
+distinct coverage claims. Review required behavior before adding each existing
+file to the portable manifest.

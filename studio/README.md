@@ -61,3 +61,22 @@ permission from an autonomous studio task.
 Port the remaining roles/workflows incrementally with source-of-truth ownership
 and behavioral parity checks. Do not naïvely copy Claude's `Agent` or
 `AskUserQuestion` instructions into another runtime and call it portable.
+
+## Sequential provider handoffs
+
+The optional `scripts/studio_sequence.py` command accepts a sequence manifest
+of task JSON paths. It executes them in order, stops on a blocked/failed task,
+and requires private receipts for actual execution. Example:
+`python scripts/studio_sequence.py --sequence docs/examples/atlas-client-proxies-review.sequence.json --worktree ../atlas-midgard-ccgs`
+is a safe dry run; add `--execute --receipt-dir ../private-studio-receipts`
+only with installed and authenticated CLIs.
+
+Role instructions are embedded in CLI prompts so that top-level Codex execution
+does not silently rely on native subagent creation. This remains a sequential
+provider handoff, not a persistent distributed job coordinator.
+
+## Migration inventory
+
+`python scripts/studio_audit.py --summary --expect-baseline` reports the
+original 49/74 legacy corpus and lexical provider-coupling signals. It does not
+claim the new prefixed pilot is semantically equivalent to each legacy file.
