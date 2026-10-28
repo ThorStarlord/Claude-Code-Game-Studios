@@ -102,7 +102,7 @@ def make_prompt(task: dict, sha: str) -> str:
     ]
     for criterion in task.get("acceptance_criteria", []):
         lines.append(f"Acceptance criterion: {criterion}")
-    if task["read_only"]:
+    if task.get("read_only", False):
         lines.append("This is READ ONLY. Make no file, Git or project state changes.")
     return "\n".join(lines)
 
@@ -116,7 +116,7 @@ def native_command(task: dict, prompt: str) -> list[str]:
             result += ["--model", task["model"]]
     elif runtime == "codex":
         result = ["codex", "exec", "--sandbox",
-                  "read-only" if task["read_only"] else "workspace-write", "--json"]
+                  "read-only" if task.get("read_only", False) else "workspace-write", "--json"]
         if task.get("model"):
             result += ["-m", task["model"]]
         # codex exec is a top-level agent. Prompting a role does not prove
@@ -137,7 +137,7 @@ def private_save(path: Path, content: str) -> None:
 
 
 def run(task: dict, root: Path, execute: bool, receipts: Path | None, timeout: int) -> dict:
-    branch, sha, before = checkout_state(root, execute, task["read_only"])
+    branch, sha, before = checkout_state(root, execute, task.get("read_only", False))
     if task.get("base_commit") and task["base_commit"] != sha:
         raise RunnerError(f"Base SHA mismatch; expected {task['base_commit']}, found {sha}")
     command = native_command(task, make_prompt(task, sha))
@@ -166,7 +166,7 @@ def run(task: dict, root: Path, execute: bool, receipts: Path | None, timeout: i
     changes = changed_paths(root)
     record.update(changed_files=changes, exit_code=code)
     unexpected = [p for p in changes if not within_scope(p, task["allowed_paths"])]
-    if task["read_only"] and git(root, "status", "--porcelain", "-uall") != before:
+    if task.get("read_only", False) and git(root, "status", "--porcelain", "-uall") != before:
         record.update(status="blocked", reason="Read-only task changed Git working state")
     elif unexpected:
         record.update(status="blocked", reason=f"Out-of-scope changes detected (not reverted): {unexpected}")
