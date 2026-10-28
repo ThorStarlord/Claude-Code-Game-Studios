@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "task_id": "atlas-client-proxies",
+  "role": "ccgs-gameplay-programmer",
+  "runtime": "codex",
+  "objective": "Implement non-authoritative client replica presentation Node3D proxies for Atlas's Package 35 snapshots and handle retirement.",
+  "repository": "atlas-midgard",
+  "allowed_paths": [
+    "game",
+    "tests",
+    "docs/implementation"
+  ],
+  "autonomy": "autonomous",
+  "acceptance_criteria": [
+    "Host-issued handles key presentation proxy identity independently of content_id.",
+    "Accepted ordered host snapshots update presentation-only transforms using the existing client replica state.",
+    "Retired handles dispose of the associated proxies and cannot gain simulation or persistence authority.",
+    "Focused changed-behavior checks execute where Godot is available, with explicit NOT RUN states otherwise."
+  ]
+}
