@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source": "studio",
+  "roles": [
+    {
+      "id": "ccgs-producer",
+      "source": "studio/roles/producer.md",
+      "kind": "coordination"
+    },
+    {
+      "id": "ccgs-gameplay-programmer",
+      "source": "studio/roles/gameplay-programmer.md",
+      "kind": "implementation"
+    },
+    {
+      "id": "ccgs-godot-specialist",
+      "source": "studio/roles/godot-specialist.md",
+      "kind": "review"
+    },
+    {
+      "id": "ccgs-qa-tester",
+      "source": "studio/roles/qa-tester.md",
+      "kind": "review"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "ccgs-adopt-project",
+      "source": "studio/workflows/adopt-project/SKILL.md"
+    },
+    {
+      "id": "ccgs-implement-story",
+      "source": "studio/workflows/implement-story/SKILL.md"
+    },
+    {
+      "id": "ccgs-verify-story",
+      "source": "studio/workflows/verify-story/SKILL.md"
+    }
+  ]
+}
